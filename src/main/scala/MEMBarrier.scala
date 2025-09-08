@@ -7,10 +7,12 @@ class MEMBarrier extends Module {
     val InstructionIn    = Input(new Instruction)
     val ALUResultIn      = Input(UInt(32.W))
     val controlSignalsIn = Input(new ControlSignals)
+    val DMEMDataIn       = Input(UInt(32.W))
 
     val InstructionOut    = Output(new Instruction)
     val ALUResultOut      = Output(UInt(32.W))
     val controlSignalsOut = Output(new ControlSignals)
+    val DMEMDataOut       = Output(UInt(32.W))
   })
 
   val InstructionReg    = RegInit(0.U.asTypeOf(new Instruction))
@@ -24,4 +26,6 @@ class MEMBarrier extends Module {
   io.InstructionOut    := InstructionReg
   io.ALUResultOut      := ALUResultReg
   io.controlSignalsOut := controlSignalsReg
+
+  io.DMEMDataOut       := io.DMEMDataIn // pass through, retrieving from memory takes a cycle
 }

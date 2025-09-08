@@ -30,7 +30,6 @@ class CPU extends MultiIOModule {
   val ID  = Module(new InstructionDecode)
   val EX  = Module(new Execute)
   val MEM = Module(new MemoryFetch)
-  // val WB  = Module(new Execute) (You may not need this one?)
 
 
   /**
@@ -54,7 +53,7 @@ class CPU extends MultiIOModule {
     TODO: Your code here
     */
 
-  // IF to ID
+  // IF to IDgg
   IFBarrier.PCIn          := IF.io.PC
   IFBarrier.InstructionIn := IF.io.Instruction
   ID.io.Instruction       := IFBarrier.InstructionOut
@@ -82,12 +81,18 @@ class CPU extends MultiIOModule {
   EXBarrier.InstructionIn    := EX.io.Instruction
   EXBarrier.ALUResultIn      := EX.io.ALUResult
   EXBarrier.controlSignalsIn := IDBarrier.controlSignalsOut
+  EXBarrier.readData2In      := EX.io.readData2 // passed through EX
+  MEM.io.ALUResult           := EXBarrier.ALUResultOut
+  MEM.io.readData2           := EXBarrier.readData2Out
+  MEM.io.controlSignals      := EXBarrier.controlSignalsOut
 
   // MEM to WB
   MEMBarrier.InstructionIn    := EXBarrier.InstructionOut
   MEMBarrier.ALUResultIn      := EXBarrier.ALUResultOut
   MEMBarrier.controlSignalsIn := EXBarrier.controlSignalsOut
-  ID.io.writeDataFromWB       := MEMBarrier.ALUResultOut
+  MEMBarrier.DMEMDataIn       := MEM.io.DMEMData
+  ID.io.ALUResultFromWB       := MEMBarrier.ALUResultOut
   ID.io.instructionFromWB     := MEMBarrier.InstructionOut
   ID.io.controlSignalsFromWB  := MEMBarrier.controlSignalsOut
+  ID.io.DMEMDataFromWB        := MEMBarrier.DMEMDataOut
 }

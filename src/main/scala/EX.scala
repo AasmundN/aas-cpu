@@ -34,6 +34,8 @@ class Execute extends MultiIOModule {
 
   when(io.immType === ImmFormat.ITYPE) {
     imm := Cat(Fill(20, io.Instruction.immediateIType(11.U)), io.Instruction.immediateIType)
+  }.elsewhen(io.immType === ImmFormat.STYPE) {
+    imm := Cat(Fill(20, io.Instruction.immediateSType(11.U)), io.Instruction.immediateSType)
   }.otherwise {
     imm := 0.U
   }

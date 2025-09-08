@@ -24,9 +24,10 @@ class InstructionDecode extends MultiIOModule {
       val Instruction        = Input(new Instruction)
 
       // from write back stage
-      val writeDataFromWB      = Input(UInt(32.W))
+      val ALUResultFromWB      = Input(UInt(32.W))
       val controlSignalsFromWB = Input(new ControlSignals)
       val instructionFromWB    = Input(new Instruction)
+      val DMEMDataFromWB       = Input(UInt(32.W))
   
       val readData1 = Output(UInt(32.W))
       val readData2 = Output(UInt(32.W))
@@ -51,7 +52,6 @@ class InstructionDecode extends MultiIOModule {
   testHarness.registerPeek    := registers.io.readData1
   testHarness.testUpdates     := registers.testHarness.testUpdates
 
-
   /**
     * TODO: Your code here.
     */
@@ -65,8 +65,14 @@ class InstructionDecode extends MultiIOModule {
 
   // these two get their values from the WB stage
   registers.io.writeAddress := io.instructionFromWB.registerRd
-  registers.io.writeData    := io.writeDataFromWB
   registers.io.writeEnable  := io.controlSignalsFromWB.regWrite
+
+  // Loads vs alu operations
+  when(io.controlSignalsFromWB.memRead) {
+    registers.io.writeData    := io.DMEMDataFromWB
+  }.otherwise {
+    registers.io.writeData    := io.ALUResultFromWB
+  }
 
   // decoder
   decoder.instruction := io.Instruction
