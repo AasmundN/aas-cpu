@@ -41,7 +41,7 @@ class Execute extends MultiIOModule {
   // operation 1 select
   when(io.op1Select === Op1Select.rs1) {
     ALU.op1 := io.readData1
-  }.otherwise {
+  }.otherwise { // missing PC as input
     ALU.op1 := 0.U
   }
 

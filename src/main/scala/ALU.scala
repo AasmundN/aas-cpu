@@ -18,6 +18,16 @@ class ArithmeticUnit extends MultiIOModule {
   val ALUopMap = Array(
     ADD    -> (io.op1 + io.op2),
     SUB    -> (io.op1 - io.op2),
+    AND    -> (io.op1 & io.op2),
+    OR     -> (io.op1 | io.op2),
+    XOR    -> (io.op1 ^ io.op2),
+    SLT    -> (io.op1.asSInt < io.op2.asSInt),
+    SLL    -> (io.op1 << io.op2(4, 0)),
+    SLTU   -> (io.op1.asUInt < io.op2.asUInt),
+    SRL    -> (io.op1 >> io.op2(4, 0)),
+    SRA    -> (io.op1.asSInt >> io.op2(4, 0)).asUInt, // some trickery to do arithmetic shift
+    COPY_A -> io.op1, 
+    COPY_B -> io.op2, 
   )
 
   io.ALUResult := MuxLookup(io.ALUop, 0.U(32.W), ALUopMap)
