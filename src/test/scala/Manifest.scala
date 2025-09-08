@@ -24,7 +24,7 @@ object Manifest {
   val nopPadded = true
 
   val singleTestOptions = TestOptions(
-    printIfSuccessful  = true,
+    printIfSuccessful  = false,
     printErrors        = true,
     printParsedProgram = false,
     printVMtrace       = false,

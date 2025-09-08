@@ -21,14 +21,14 @@ class CPU extends MultiIOModule {
   /**
     You need to create the classes for these yourself
     */
-  // val IFBarrier  = Module(new IFBarrier).io
-  // val IDBarrier  = Module(new IDBarrier).io
-  // val EXBarrier  = Module(new EXBarrier).io
-  // val MEMBarrier = Module(new MEMBarrier).io
+  val IFBarrier  = Module(new IFBarrier).io
+  val IDBarrier  = Module(new IDBarrier).io
+  val EXBarrier  = Module(new EXBarrier).io
+  val MEMBarrier = Module(new MEMBarrier).io
 
-  val ID  = Module(new InstructionDecode)
   val IF  = Module(new InstructionFetch)
-  // val EX  = Module(new Execute)
+  val ID  = Module(new InstructionDecode)
+  val EX  = Module(new Execute)
   val MEM = Module(new MemoryFetch)
   // val WB  = Module(new Execute) (You may not need this one?)
 
@@ -44,14 +44,50 @@ class CPU extends MultiIOModule {
   testHarness.testReadouts.DMEMread     := MEM.testHarness.DMEMpeek
 
   /**
-    spying stuff
+    * spying stuff
     */
   testHarness.regUpdates := ID.testHarness.testUpdates
   testHarness.memUpdates := MEM.testHarness.testUpdates
   testHarness.currentPC  := IF.testHarness.PC
 
-
   /**
     TODO: Your code here
     */
+
+  // IF to ID
+  IFBarrier.PCIn          := IF.io.PC
+  IFBarrier.InstructionIn := IF.io.Instruction
+  ID.io.Instruction       := IFBarrier.InstructionOut
+
+  // ID to EX
+  IDBarrier.InstructionIn    := ID.io.Instruction
+  IDBarrier.readData1In      := ID.io.readData1
+  IDBarrier.readData2In      := ID.io.readData2
+  IDBarrier.controlSignalsIn := ID.io.controlSignals
+  IDBarrier.branchTypeIn     := ID.io.branchType
+  IDBarrier.op1SelectIn      := ID.io.op1Select
+  IDBarrier.op2SelectIn      := ID.io.op2Select
+  IDBarrier.immTypeIn        := ID.io.immType
+  IDBarrier.ALUopIn          := ID.io.ALUop
+  IDBarrier.PCIn             := IFBarrier.PCOut // passed through ID
+  EX.io.Instruction := IDBarrier.InstructionOut
+  EX.io.readData1   := IDBarrier.readData1Out
+  EX.io.readData2   := IDBarrier.readData2Out
+  EX.io.op1Select   := IDBarrier.op1SelectOut
+  EX.io.op2Select   := IDBarrier.op2SelectOut
+  EX.io.immType     := IDBarrier.immTypeOut
+  EX.io.ALUop       := IDBarrier.ALUopOut
+
+  // EX to MEM
+  EXBarrier.InstructionIn    := EX.io.Instruction
+  EXBarrier.ALUResultIn      := EX.io.ALUResult
+  EXBarrier.controlSignalsIn := IDBarrier.controlSignalsOut
+
+  // MEM to WB
+  MEMBarrier.InstructionIn    := EXBarrier.InstructionOut
+  MEMBarrier.ALUResultIn      := EXBarrier.ALUResultOut
+  MEMBarrier.controlSignalsIn := EXBarrier.controlSignalsOut
+  ID.io.writeDataFromWB       := MEMBarrier.ALUResultOut
+  ID.io.instructionFromWB     := MEMBarrier.InstructionOut
+  ID.io.controlSignalsFromWB  := MEMBarrier.controlSignalsOut
 }

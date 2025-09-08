@@ -57,6 +57,7 @@ class Decoder() extends Module {
     /**
       TODO: Fill in the blanks
       */
+    ADDI    -> List(Y,        N,       N,        N,       N,    branchType.DC, rs1,       imm,      ITYPE,        ALUOps.ADD),
     )
 
 
@@ -78,4 +79,12 @@ class Decoder() extends Module {
   io.op2Select  := decodedControlSignals(7)
   io.immType    := decodedControlSignals(8)
   io.ALUop      := decodedControlSignals(9)
+
+  // Debug signals
+  KeepSignal(io.controlSignals.regWrite)
+  KeepSignal(io.controlSignals.memRead)
+  KeepSignal(io.controlSignals.memWrite)
+  KeepSignal(io.controlSignals.branch)
+  KeepSignal(io.controlSignals.jump)
+  KeepSignal(io.ALUop)
 }

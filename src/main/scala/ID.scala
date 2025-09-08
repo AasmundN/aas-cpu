@@ -21,6 +21,22 @@ class InstructionDecode extends MultiIOModule {
       /**
         * TODO: Your code here.
         */
+      val Instruction        = Input(new Instruction)
+
+      // from write back stage
+      val writeDataFromWB      = Input(UInt(32.W))
+      val controlSignalsFromWB = Input(new ControlSignals)
+      val instructionFromWB    = Input(new Instruction)
+  
+      val readData1 = Output(UInt(32.W))
+      val readData2 = Output(UInt(32.W))
+
+      val controlSignals = Output(new ControlSignals)
+      val branchType     = Output(UInt(3.W))
+      val op1Select      = Output(UInt(1.W))
+      val op2Select      = Output(UInt(1.W))
+      val immType        = Output(UInt(3.W))
+      val ALUop          = Output(UInt(4.W))
     }
   )
 
@@ -39,11 +55,31 @@ class InstructionDecode extends MultiIOModule {
   /**
     * TODO: Your code here.
     */
-  registers.io.readAddress1 := 0.U
-  registers.io.readAddress2 := 0.U
-  registers.io.writeEnable  := false.B
-  registers.io.writeAddress := 0.U
-  registers.io.writeData    := 0.U
 
-  decoder.instruction := 0.U.asTypeOf(new Instruction)
+  // register file
+  registers.io.readAddress1 := io.Instruction.registerRs1
+  registers.io.readAddress2 := io.Instruction.registerRs2
+
+  io.readData1 := registers.io.readData1
+  io.readData2 := registers.io.readData2
+
+  // these two get their values from the WB stage
+  registers.io.writeAddress := io.instructionFromWB.registerRd
+  registers.io.writeData    := io.writeDataFromWB
+  registers.io.writeEnable  := io.controlSignalsFromWB.regWrite
+
+  // decoder
+  decoder.instruction := io.Instruction
+
+  // control
+  io.controlSignals := decoder.controlSignals
+  io.branchType := decoder.branchType
+  io.op1Select := decoder.op1Select
+  io.op2Select := decoder.op2Select
+  io.immType := decoder.immType
+  io.ALUop := decoder.ALUop
+
+  // Debug signals
+  KeepSignal(io.readData1)
+  KeepSignal(io.readData2)
 }
